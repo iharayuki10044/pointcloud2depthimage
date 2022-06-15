@@ -5,28 +5,51 @@ PointCloud2DepthImage::PointCloud2DepthImage(void)
 {
     // Initialize ROS node
     nh.param("HZ", HZ, 10.0);
+    nh.param("HEGHT", HEGHT, 512);
+    nh.param("WIDTH", WIDTH, 512);
 
+    std::cout << "HZ: " << HZ << std::endl;
+    std::cout << "HEGHT: " << HEGHT << std::endl;
+    std::cout << "WIDTH: " << WIDTH << std::endl;
 
-    pointcloud_subscriber = nh.subscribe("/velodyne_points", 10 , &PointCloud2DepthImage::pc_callback, this);
-
+    pointcloud_sub = nh.subscribe("/velodyne_points", 10 , &PointCloud2DepthImage::pc_callback, this);
+    depthimage_pub = nh.advertise<sensor_msgs::Image>("/depthimage", 1);
 
 }
 
-void PointCloud2DepthImage::pc_callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
+void PointCloud2DepthImage::pc_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
-    sensor_msgs::PointCloud2 input_pc = *msg;
+    sensor_msgs::PointCloud2 input_pc;
+    input_pc = *msg;
+    // pcl::fromROSMsg(input_pc, *input_pc_ptr);
     pc_callback_flag = true;
 
 }
 
-void PointCloud2DepthImage::pointcloud2depthimage(const sensor_msgs::PointCloud2& pc)
+void PointCloud2DepthImage::pointcloud2depthimage(void)
 {
+    cv::Mat depth_image(HEGHT, WIDTH, CV_32FC1, cv::Scalar(0));
+
+    // for(int i=0; i<pc.size(); i++)
+    // {
+    //     float x = pc.points[i].x;
+    //     float y = pc.points[i].y;
+    //     float z = pc.points[i].z;
+
+    // }
+
+
+    // Convert PointCloud2 to PointCloud
+}
+
+// void PointCloud2DepthImage::pointcloud2depthimage(const sensor_msgs::PointCloud2& pc)
+// {
     // Convert the point cloud to pcl format
     // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
     // pcl::fromROSMsg(pc, *cloud);
 
     // Create a depth image
-    // cv::Mat depth_image(cloud->height, cloud->width, CV_32FC1);
+    // cv::Mat depth_image(HEGHT, WIDTH, CV_32FC1);
 
     // Iterate through the point cloud and fill in the depth image
     // for (int v = 0; v < cloud->height; v++)
@@ -46,8 +69,8 @@ void PointCloud2DepthImage::pointcloud2depthimage(const sensor_msgs::PointCloud2
     // cv_image.image = depth_image;
 
     // Publish the depth image
-    // image_pub.publish(cv_image.toImageMsg());
-}
+    // depthimage_pub.publish(cv_image.toImageMsg());
+// }
 
 void PointCloud2DepthImage::process(void)
 {
@@ -56,7 +79,7 @@ void PointCloud2DepthImage::process(void)
     {
         if(pc_callback_flag)
         {
-            pointcloud2depthimage(input_pc);
+            // pointcloud2depthimage();
             pc_callback_flag = false;
         }
         ros::spinOnce();
