@@ -7,10 +7,14 @@ PointCloud2DepthImage::PointCloud2DepthImage(void)
     nh.param("HZ", HZ, 10.0);
     nh.param("HEGHT", HEGHT, 512);
     nh.param("WIDTH", WIDTH, 512);
+    nh.param("VERTICAL_FOV", VERTICAL_FOV, M_PI/2.0);
+    nh.param("HORIZONTAL_FOV", HORIZONTAL_FOV, M_PI);
 
     std::cout << "HZ: " << HZ << std::endl;
     std::cout << "HEGHT: " << HEGHT << std::endl;
     std::cout << "WIDTH: " << WIDTH << std::endl;
+    std::cout << "VERTICAL_FOV: " << VERTICAL_FOV << std::endl;
+    std::cout << "HORIZONTAL_FOV: " << HORIZONTAL_FOV << std::endl;
 
     pointcloud_sub = nh.subscribe("/velodyne_points", 10 , &PointCloud2DepthImage::pc_callback, this);
     depthimage_pub = nh.advertise<sensor_msgs::Image>("/depthimage", 1);
@@ -27,16 +31,35 @@ void PointCloud2DepthImage::pointcloud2depthimage(void)
 {
     cv::Mat depth_image(HEGHT, WIDTH, CV_32FC1, cv::Scalar(0));
 
-    // for(int i=0; i<pc.size(); i++)
-    // {
-    //     float x = pc.points[i].x;
-    //     float y = pc.points[i].y;
-    //     float z = pc.points[i].z;
+    std::vector<float> polar_coordinates(3, 0);
+    // r, theta, phi
 
-    // }
+    for(auto& point : input_pc_ptr->points){
+        polar_coordinates[0] = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
+        polar_coordinates[1] = acos(point.z/polar_coordinates[0]);
+        polar_coordinates[2] = acos(point.x/sqrt(point.x*point.x + point.y*point.y));
+
+        if((abs(polar_coordinates[1]) < VERTICAL_FOV)&&(abs(polar_coordinates[2]) < HORIZONTAL_FOV)){
+            int row = HEGHT/2 + polar_coordinates[1]*HEGHT/VERTICAL_FOV;
+            int col = WIDTH/2 + polar_coordinates[2]*WIDTH/HORIZONTAL_FOV;
+            depth_image.at<float>(row, col) = polar_coordinates[0]; 
+        
+        }
 
 
-    // Convert PointCloud2 to PointCloud
+    }
+
+}
+
+std::vector<float> transrate2polarcoodinates(const float& x, const float& y, const float& z)
+{
+    std::vector<float> polar_coordinates(3, 0);
+
+    polar_coordinates[0] = sqrt(x*x + y*y + z*z);
+    polar_coordinates[1] = acos(z/polar_coordinates[0]);
+    polar_coordinates[2] = acos(x/sqrt(x*x + y*y));
+
+    return polar_coordinates;
 }
 
 // void PointCloud2DepthImage::pointcloud2depthimage(const sensor_msgs::PointCloud2& pc)

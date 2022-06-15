@@ -29,6 +29,7 @@ class PointCloud2DepthImage
 
             void pointcloud2depthimage(void); 
 
+            std::vector<float> tranrate2polarcoodinates(const float&, const float&, const float&);
 
 
     private:
@@ -37,6 +38,9 @@ class PointCloud2DepthImage
 
         int HEGHT;
         int WIDTH;
+
+        double VERTICAL_FOV;
+        double HORIZONTAL_FOV;
 
         bool pc_callback_flag;
 
