@@ -25,7 +25,7 @@ class PointCloud2DepthImage
 
             void process(void);
 
-            void pc_callback(const sensor_msgs::PointCloud2ConstPtr&);
+            void pc_callback(const sensor_msgs::PointCloud2::ConstPtr &msg);
 
             void pointcloud2depthimage(void); 
 
@@ -40,8 +40,7 @@ class PointCloud2DepthImage
 
         bool pc_callback_flag;
 
-        sensor_msgs::PointCloud2 input_pc;
-        PointCloudPtr input_pc_ptr {new PointCloud()};
+        PointCloudPtr input_pc_ptr {new PointCloud};
 
         ros::NodeHandle nh;
         ros::Subscriber pointcloud_sub;

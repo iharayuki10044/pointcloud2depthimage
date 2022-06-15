@@ -17,13 +17,10 @@ PointCloud2DepthImage::PointCloud2DepthImage(void)
 
 }
 
-void PointCloud2DepthImage::pc_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
+void PointCloud2DepthImage::pc_callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
-    sensor_msgs::PointCloud2 input_pc;
-    input_pc = *msg;
-    // pcl::fromROSMsg(input_pc, *input_pc_ptr);
+    pcl::fromROSMsg(*msg, *input_pc_ptr);
     pc_callback_flag = true;
-
 }
 
 void PointCloud2DepthImage::pointcloud2depthimage(void)

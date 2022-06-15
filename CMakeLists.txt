@@ -14,7 +14,7 @@ find_package(catkin REQUIRED
     cv_bridge
 )
 
-find_package(PCL REQUIRED)
+find_package(PCL  1.8 REQUIRED)
 find_package(OpenCV)
 
 ## System dependencies are found with CMake's conventions
@@ -126,6 +126,15 @@ include_directories(
     ${OpenCV_INCLUDE_DIRS}
 )
 
+
+link_directories(
+    ${PCL_LIBRARY_DIRS}
+)
+
+add_definitions(
+	${PCL_DEFINITIONS}
+)
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/pointcloud2depthimage.cpp
@@ -140,7 +149,11 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME} src/pointcloud2depthimage.cpp)
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(
+    ${PROJECT_NAME} 
+    ${catkin_LIBRARIES} 
+    ${PCL_LIBRARIES}
+)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
