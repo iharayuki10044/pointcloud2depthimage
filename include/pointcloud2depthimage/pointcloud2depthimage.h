@@ -41,8 +41,11 @@ class PointCloud2DepthImage
 
         double VERTICAL_FOV;
         double HORIZONTAL_FOV;
+        double MAX_DEPTH;
+
 
         bool pc_callback_flag;
+
 
         PointCloudPtr input_pc_ptr {new PointCloud};
 

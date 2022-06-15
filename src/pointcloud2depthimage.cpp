@@ -9,12 +9,14 @@ PointCloud2DepthImage::PointCloud2DepthImage(void)
     nh.param("GRID_WIDTH", GRID_WIDTH, 512);
     nh.param("VERTICAL_FOV", VERTICAL_FOV, M_PI/2.0);
     nh.param("HORIZONTAL_FOV", HORIZONTAL_FOV, M_PI);
+    nh.param("MAX_DEPTH", MAX_DEPTH, 10.0);
 
     std::cout << "HZ: " << HZ << std::endl;
     std::cout << "GRID_HEGHT: " << GRID_HEGHT << std::endl;
     std::cout << "GRID_WIDTH: " << GRID_WIDTH << std::endl;
     std::cout << "VERTICAL_FOV: " << VERTICAL_FOV << std::endl;
     std::cout << "HORIZONTAL_FOV: " << HORIZONTAL_FOV << std::endl;
+    std::cout << "MAX_DEPTH: " << MAX_DEPTH << std::endl;
 
     pointcloud_sub = nh.subscribe("/velodyne_points", 10 , &PointCloud2DepthImage::pc_callback, this);
     depthimage_pub = nh.advertise<sensor_msgs::Image>("/depthimage", 1);
@@ -42,13 +44,13 @@ void PointCloud2DepthImage::pointcloud2depthimage(void)
         if((abs(polar_coordinates[1]) < VERTICAL_FOV)&&(abs(polar_coordinates[2]) < HORIZONTAL_FOV)){
             int row = GRID_HEGHT/2 + polar_coordinates[1]*GRID_HEGHT/VERTICAL_FOV;
             int col = GRID_WIDTH/2 + polar_coordinates[2]*GRID_WIDTH/HORIZONTAL_FOV;
-            depth_image.at<float>(row, col) = polar_coordinates[0]; 
+            depth_image.at<float>(row, col) = polar_coordinates[0] /MAX_DEPTH; 
         
         }
 
-
     }
 
+    depthimage_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "32FC1", depth_image).toImageMsg());
 }
 
 std::vector<float> transrate2polarcoodinates(const float& x, const float& y, const float& z)
@@ -62,44 +64,20 @@ std::vector<float> transrate2polarcoodinates(const float& x, const float& y, con
     return polar_coordinates;
 }
 
-// void PointCloud2DepthImage::pointcloud2depthimage(const sensor_msgs::PointCloud2& pc)
-// {
-    // Convert the point cloud to pcl format
-    // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-    // pcl::fromROSMsg(pc, *cloud);
-
-    // Create a depth image
-    // cv::Mat depth_image(HEGHT, WIDTH, CV_32FC1);
-
-    // Iterate through the point cloud and fill in the depth image
-    // for (int v = 0; v < cloud->height; v++)
-    // {
-    //     for (int u = 0; u < cloud->width; u++)
-    //     {
-    //         pcl::PointXYZ pt = cloud->at(u, v);
-    //         depth_image.at<float>(v, u) = pt.z;
-    //     }
-    // }
-
-    // Convert the depth image to a ROS image
-    // cv_bridge::CvImage cv_image;
-    // cv_image.header.stamp = ros::Time::now();
-    // cv_image.header.frame_id = "velodyne";
-    // cv_image.encoding = "32FC1";
-    // cv_image.image = depth_image;
-
-    // Publish the depth image
-    // depthimage_pub.publish(cv_image.toImageMsg());
-// }
 
 void PointCloud2DepthImage::process(void)
 {
     ros::Rate loop_rate(HZ);
+    pc_callback_flag = false;
+    std::cout << "PointCloud2DepthImage::process()" << std::endl;
     while(ros::ok())
     {
+        std::cout << "pc_callback_flag: " << pc_callback_flag << std::endl;
+ 
         if(pc_callback_flag)
         {
-            // pointcloud2depthimage();
+            pointcloud2depthimage();
+            std::cout << "--published depth image--" << std::endl;
             pc_callback_flag = false;
         }
         ros::spinOnce();
