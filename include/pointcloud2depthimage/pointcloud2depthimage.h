@@ -36,8 +36,8 @@ class PointCloud2DepthImage
 
         double HZ;
 
-        int HEGHT;
-        int WIDTH;
+        int GRID_HEGHT;
+        int GRID_WIDTH;
 
         double VERTICAL_FOV;
         double HORIZONTAL_FOV;

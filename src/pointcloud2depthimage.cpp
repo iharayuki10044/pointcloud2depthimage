@@ -5,14 +5,14 @@ PointCloud2DepthImage::PointCloud2DepthImage(void)
 {
     // Initialize ROS node
     nh.param("HZ", HZ, 10.0);
-    nh.param("HEGHT", HEGHT, 512);
-    nh.param("WIDTH", WIDTH, 512);
+    nh.param("GRID_HEGHT", GRID_HEGHT, 512);
+    nh.param("GRID_WIDTH", GRID_WIDTH, 512);
     nh.param("VERTICAL_FOV", VERTICAL_FOV, M_PI/2.0);
     nh.param("HORIZONTAL_FOV", HORIZONTAL_FOV, M_PI);
 
     std::cout << "HZ: " << HZ << std::endl;
-    std::cout << "HEGHT: " << HEGHT << std::endl;
-    std::cout << "WIDTH: " << WIDTH << std::endl;
+    std::cout << "GRID_HEGHT: " << GRID_HEGHT << std::endl;
+    std::cout << "GRID_WIDTH: " << GRID_WIDTH << std::endl;
     std::cout << "VERTICAL_FOV: " << VERTICAL_FOV << std::endl;
     std::cout << "HORIZONTAL_FOV: " << HORIZONTAL_FOV << std::endl;
 
@@ -29,7 +29,7 @@ void PointCloud2DepthImage::pc_callback(const sensor_msgs::PointCloud2::ConstPtr
 
 void PointCloud2DepthImage::pointcloud2depthimage(void)
 {
-    cv::Mat depth_image(HEGHT, WIDTH, CV_32FC1, cv::Scalar(0));
+    cv::Mat depth_image(GRID_HEGHT, GRID_WIDTH, CV_32FC1, cv::Scalar(0));
 
     std::vector<float> polar_coordinates(3, 0);
     // r, theta, phi
@@ -40,8 +40,8 @@ void PointCloud2DepthImage::pointcloud2depthimage(void)
         polar_coordinates[2] = acos(point.x/sqrt(point.x*point.x + point.y*point.y));
 
         if((abs(polar_coordinates[1]) < VERTICAL_FOV)&&(abs(polar_coordinates[2]) < HORIZONTAL_FOV)){
-            int row = HEGHT/2 + polar_coordinates[1]*HEGHT/VERTICAL_FOV;
-            int col = WIDTH/2 + polar_coordinates[2]*WIDTH/HORIZONTAL_FOV;
+            int row = GRID_HEGHT/2 + polar_coordinates[1]*GRID_HEGHT/VERTICAL_FOV;
+            int col = GRID_WIDTH/2 + polar_coordinates[2]*GRID_WIDTH/HORIZONTAL_FOV;
             depth_image.at<float>(row, col) = polar_coordinates[0]; 
         
         }
